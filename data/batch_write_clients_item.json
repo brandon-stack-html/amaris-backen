@@ -1,0 +1,59 @@
+{
+    "CLIENTS-dev": [
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "1"},
+                    "ClientName": {"S": "Juan Pérez"},
+                    "ContactNumber": {"S": "3101234567"},
+                    "Email": {"S": "juan.perez@example.com"},
+                    "Balance": {"N": "1000"}  
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "2"},
+                    "ClientName": {"S": "María López"},
+                    "ContactNumber": {"S": "3112345678"},
+                    "Email": {"S": "maria.lopez@example.com"},
+                    "Balance": {"N": "1500"}  
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "3"},
+                    "ClientName": {"S": "Carlos Fernández"},
+                    "ContactNumber": {"S": "3123456789"},
+                    "Email": {"S": "carlos.fernandez@example.com"},
+                    "Balance": {"N": "2000"} 
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "4"},
+                    "ClientName": {"S": "Ana Martínez"},
+                    "ContactNumber": {"S": "3134567890"},
+                    "Email": {"S": "ana.martinez@example.com"},
+                    "Balance": {"N": "2500"}  
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "5"},
+                    "ClientName": {"S": "Luis Rodríguez"},
+                    "ContactNumber": {"S": "3145678901"},
+                    "Email": {"S": "luis.rodriguez@example.com"},
+                    "Balance": {"N": "3000"}  
+                }
+            }
+        }
+    ]
+}

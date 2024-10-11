@@ -1,0 +1,270 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: "Ejemplo de funciones Lambda con AWS SAM para la gesti\xF3n de fondos."
+Globals:
+  Function:
+    Runtime: python3.9
+    Architectures:
+    - x86_64
+    MemorySize: 256
+    Environment:
+      Variables:
+        SUBSCRIPTIONS_TABLE:
+          Ref: SubscriptionsTable
+        FUNDS_TABLE:
+          Ref: FundsTable
+        CLIENTS_TABLE:
+          Ref: ClientsTable
+        TRANSACTION_HISTORY_TABLE:
+          Ref: TransactionHistoryTable
+        REGION: us-east-1
+    Timeout: 15
+Parameters:
+  StageName:
+    Type: String
+    Default: dev
+    Description: (Required) Enter dev, test, stag, prod. Default is dev.
+    AllowedValues:
+    - dev
+    - test
+    - stag
+    - prod
+Resources:
+  FundsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowOrigin: '''*'''
+        AllowMethods: '''GET,POST'''
+        AllowHeaders: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+  ClientsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: CLIENTS-${StageName}
+      AttributeDefinitions:
+      - AttributeName: PK
+        AttributeType: S
+      KeySchema:
+      - AttributeName: PK
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  FundsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: FUNDS-${StageName}
+      AttributeDefinitions:
+      - AttributeName: PK
+        AttributeType: S
+      KeySchema:
+      - AttributeName: PK
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  SubscriptionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: SUBSCRIPTIONS-${StageName}
+      AttributeDefinitions:
+      - AttributeName: PK
+        AttributeType: S
+      - AttributeName: SK
+        AttributeType: S
+      KeySchema:
+      - AttributeName: PK
+        KeyType: HASH
+      - AttributeName: SK
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  TransactionHistoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: TRANSACTIONS-${StageName}
+      AttributeDefinitions:
+      - AttributeName: PK
+        AttributeType: S
+      - AttributeName: SK
+        AttributeType: S
+      KeySchema:
+      - AttributeName: PK
+        KeyType: HASH
+      - AttributeName: SK
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  SubscribeToFundFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.main
+      FunctionName:
+        Fn::Sub: subscribe_to_fund-function-${StageName}
+      CodeUri: SubscribeToFundFunction
+      Description: "Funci\xF3n Lambda para suscribirse a un fondo."
+      Events:
+        Subscribe:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: FundsApi
+            Path: /funds/subscribe
+            Method: post
+      Policies:
+      - Statement:
+          Effect: Allow
+          Action:
+          - ses:*
+          Resource: '*'
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SubscriptionsTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ClientsTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: FundsTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: TransactionHistoryTable
+    Metadata:
+      SamResourceId: SubscribeToFundFunction
+  CancelFundSubscriptionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.main
+      FunctionName:
+        Fn::Sub: cancel_fund_subscription-${StageName}
+      CodeUri: CancelFundSubscriptionFunction
+      Description: "Funci\xF3n Lambda para cancelar la suscripci\xF3n a un fondo."
+      Events:
+        Cancel:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: FundsApi
+            Path: /funds/cancel
+            Method: post
+      Policies:
+      - Statement:
+          Effect: Allow
+          Action:
+          - ses:*
+          Resource: '*'
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SubscriptionsTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ClientsTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: FundsTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: TransactionHistoryTable
+    Metadata:
+      SamResourceId: CancelFundSubscriptionFunction
+  GetResourceFetcherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.main
+      FunctionName:
+        Fn::Sub: get_resource_fetcher_function-${StageName}
+      CodeUri: GetResourceFetcherFunction
+      Description: "Funci\xF3n Lambda para obtener el historial de transacciones."
+      Events:
+        History:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: FundsApi
+            Path: /resource
+            Method: get
+            RequestParameters:
+              method.request.querystring.resourceType: true
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ClientsTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: FundsTable
+    Metadata:
+      SamResourceId: GetResourceFetcherFunction
+  GetTransactionHistoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.main
+      FunctionName:
+        Fn::Sub: get_transaction_history-${StageName}
+      CodeUri: GetTransactionHistoryFunction
+      Description: "Funci\xF3n Lambda para obtener el historial de transacciones."
+      Events:
+        History:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: FundsApi
+            Path: /funds/history/{userId}
+            Method: get
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: TransactionHistoryTable
+    Metadata:
+      SamResourceId: GetTransactionHistoryFunction
+  GetSubscriptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.main
+      FunctionName:
+        Fn::Sub: get_subscriptions-${StageName}
+      CodeUri: GetSubscriptionsFunction
+      Description: "Funci\xF3n Lambda para obtener las suscripciones."
+      Events:
+        History:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: FundsApi
+            Path: /funds/suscription/{userId}
+            Method: get
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SubscriptionsTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: FundsTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ClientsTable
+    Metadata:
+      SamResourceId: GetSubscriptionsFunction
+Outputs:
+  SubscribeToFundFunction:
+    Description: "URL de la funci\xF3n Lambda resource"
+    Value:
+      Fn::Sub: https://${FundsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/resource
+  GetResourceFetcherFunction:
+    Description: "URL de la funci\xF3n Lambda para suscribirse a un fondo"
+    Value:
+      Fn::Sub: https://${FundsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/resource
+  CancelFundSubscriptionFunction:
+    Description: "URL de la funci\xF3n Lambda para cancelar suscripci\xF3n a un fondo"
+    Value:
+      Fn::Sub: https://${FundsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/funds/cancel
+  GetTransactionHistoryFunction:
+    Description: "URL de la funci\xF3n Lambda para obtener el historial de transacciones"
+    Value:
+      Fn::Sub: https://${FundsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/funds/history

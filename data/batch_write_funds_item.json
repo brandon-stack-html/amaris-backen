@@ -1,0 +1,54 @@
+{
+    "FUNDS-dev": [
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "FPV_EL_CLIENTE_RECAUDADORA"},
+                    "Name": {"S": "FPV_EL CLIENTE_RECAUDADORA"},
+                    "MinimumInvestment": {"N": "75000.0"},  
+                    "Category": {"S": "FPV"}
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "FPV_EL_CLIENTE_ECOPETROL"},
+                    "Name": {"S": "FPV_EL CLIENTE_ECOPETROL"},
+                    "MinimumInvestment": {"N": "125000.0"},
+                    "Category": {"S": "FPV"}
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "DEUDAPRIVADA"},
+                    "Name": {"S": "DEUDAPRIVADA"},
+                    "MinimumInvestment": {"N": "50000.0"},
+                    "Category": {"S": "FIC"}
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "FDO-ACCIONES"},
+                    "Name": {"S": "FDO-ACCIONES"},
+                    "MinimumInvestment": {"N": "250000.0"},
+                    "Category": {"S": "FIC"}
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "PK": {"S": "FPV_EL_CLIENTE_DINAMICA"},
+                    "Name": {"S": "FPV_EL CLIENTE_DINAMICA"},
+                    "MinimumInvestment": {"N": "100000.0"},
+                    "Category": {"S": "FPV"}
+                }
+            }
+        }
+    ]
+}
